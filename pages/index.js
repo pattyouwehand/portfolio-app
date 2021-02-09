@@ -1,3 +1,4 @@
+
 const Home = () => (
   <div className="portfolio-app">
     {/* NAVBAR START */}
