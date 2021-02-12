@@ -1,9 +1,19 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '@/styles/index.scss'
+import Hero from '@/components/shared/Hero'
+import Navbar from '@/components/shared/Navbar'
 
 const MyApp = ({Component, pageProps}) => {
 
-  return <Component {...pageProps} />
+  return (
+    <div className="portfolio-app">
+      <Navbar />
+      {Component.name === 'Home' && <Hero />}
+      <div className="container">
+        <Component {...pageProps} />
+      </div>
+    </div>
+  )
 }
 
 export default MyApp
