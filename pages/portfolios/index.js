@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+
 import axios from 'axios'
 import PortfolioCard from '@/components/portfolios/PortfolioCard';
 import Link from 'next/link';
-import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { GET_PORTFOLIOS, CREATE_PORTFOLIO } from '@/apollo/queries';
+import withApollo from '@/hoc/withApollo';
+import { getDataFromTree } from '@apollo/react-ssr';
 
 const graphDeletePortfolio = (id) => {
   const query = `
@@ -47,36 +49,27 @@ const graphUpdatePortfolio = (id) => {
 }
 
 const Portfolios = () => {
-  const [portfolios, setPortfolios] = useState([]);
-  const [getPortfolios, {loading, data}] = useLazyQuery(GET_PORTFOLIOS);
-  const [createPortfolio, {data: dataC}] = useMutation(CREATE_PORTFOLIO);
+  const { data } = useQuery(GET_PORTFOLIOS);
 
-  useEffect(() => {
-    getPortfolios();
-  }, [])
-
-  if (data && data.portfolios.length > 0 && portfolios.length === 0) {
-    setPortfolios(data.portfolios);
-  }
-
-  if (loading) { return 'Loading...' };
+  const [createPortfolio] = useMutation(CREATE_PORTFOLIO, {
+    update(cache, {data: {createPortfolio}}) {
+      const {portfolios} = cache.readQuery({query: GET_PORTFOLIOS})
+      cache.writeQuery({
+        query: GET_PORTFOLIOS,
+        data: { portfolios: [...portfolios, createPortfolio]}
+      })
+    }
+  });
 
   const updatePortfolio = async (id) => {
-    const updatedPortfolio = await graphUpdatePortfolio(id);
-    const index = portfolios.findIndex(p => p._id === id);
-    const newPortfolios = portfolios.slice();
-    newPortfolios[index] = updatedPortfolio;
-    setPortfolios(newPortfolios);
+    await graphUpdatePortfolio(id);
   }
 
   const deletePortfolio = async (id) => {
-    const deletedId = await graphDeletePortfolio(id);
-    const index = portfolios.findIndex(p => p._id === deletedId);
-    const newPortfolios = portfolios.slice();
-    newPortfolios.splice(index, 1);
-    setPortfolios(newPortfolios);
+    await graphDeletePortfolio(id);
   }
 
+  const portfolios = data && data.portfolios || [];
   return (
     <>
       <section className="section-title">
@@ -117,4 +110,4 @@ const Portfolios = () => {
   )
 }
 
-export default Portfolios;
+export default withApollo(Portfolios, {getDataFromTree});

@@ -28,11 +28,6 @@
       "static/chunks/main.js",
       "static/chunks/webpack.js",
       "static/chunks/pages/portfolios.js"
-    ],
-    "/portfolios/[id]": [
-      "static/chunks/main.js",
-      "static/chunks/webpack.js",
-      "static/chunks/pages/portfolios/[id].js"
     ]
   },
   "ampFirstPages": []
